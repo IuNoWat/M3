@@ -1,14 +1,11 @@
 [Unit]
 Description=Dispositif M3 de l'exposition MAISON du vaisseau.
+After = multi-user.target
 
 [Service]
-Type=simple
-
-User=vaisseau
-ExecStart=/usr/bin/python3 /home/vaisseau/Desktop/M3/do_the_thing.py
-
-Restart=always
-RestartSec=5
+Type = simple
+Environment="XDG_RUNTIME_DIR=/run/user/1000"
+ExecStart=/usr/bin/python /home/vaisseau/Desktop/M3/do_the_thing.py
 
 [Install]
 WantedBy=multi-user.target

@@ -3,9 +3,11 @@
 
 import time
 import random
+import sys
 
 import pygame
 from pygame.locals import *
+
 pygame.init()
 pygame.font.init()
 
@@ -15,7 +17,14 @@ import arduino_serial as arduino
 FPS=30
 SCREEN_SIZE=(1600, 900)
 FULLSCREEN=True
-DEBUG=True
+RESET_ANIMATION_TIME=40
+
+try :
+    sys.argv[1]
+except IndexError :
+    DEBUG=False
+
+#STYLE OF THE APP
 
 #ASSETS
 NUM_FONT_PATH="/home/vaisseau/Desktop/M3/assets/DS-DIGI.TTF"
@@ -29,11 +38,9 @@ RED=pygame.Color("Red")
 COLOR_BG=pygame.Color(22,13,34,255)
 COLOR_HL=pygame.Color(255,255,255,255)
 
-#STYLE OF NUMBER
 FONT_SIZE=30
 FONT_STYLE=NUM_FONT_PATH
 FONT_COLOR=COLOR_HL
-RESET_ANIMATION_TIME=40
 
 debug_font=pygame.font.Font(TXT_FONT_PATH,16)
 
@@ -89,8 +96,12 @@ class Number() :
         if self.animation_playing==False : 
             self.woobling_timer=RESET_ANIMATION_TIME
             self.animation_playing=True
+
     def render(self) :
-        txt=f"{self.value} - "+texts[self.txt_number]+f" ({self.txt_number})"
+        if DEBUG :
+            txt=f"{self.value} - "+texts[self.txt_number]+f" ({self.txt_number})"
+        else :
+            txt=texts[self.txt_number]
 
         if self.status=="unconnected" :
             to_return=self.font.render(txt,1,COLOR_HL,COLOR_BG)
@@ -111,9 +122,10 @@ class Number() :
 running=True
 SCREEN = pygame.display.set_mode(SCREEN_SIZE,pygame.FULLSCREEN)
 CLOCK = pygame.time.Clock()
-NUMBERS=[]
 good_cables=0
 reset_timer=0
+
+NUMBERS=[]
 for i,pos in enumerate(number_pos) :
     NUMBERS.append(Number(pos,i,i))
 
@@ -136,7 +148,7 @@ while running :
 
     #Value update
     arduino_values=thread.get_msg()
-    
+
     #Numbers rendering
     for number in NUMBERS :
         number.update(arduino_values)
