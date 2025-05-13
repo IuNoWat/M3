@@ -21,8 +21,7 @@ class Arduino(Thread) :
     def get_msg(self) :
         to_return=self.msg[:7]
         if len(to_return)<6 :
-            print("LE MESSAGE DE L'ARDUINO N'EST PAS ASSEZ LONG : ")
-            print(self.msg)
+            print(f"LE MESSAGE DE L'ARDUINO N'EST PAS ASSEZ LONG : [{str(self.msg)}]")
             return "666666"
         return to_return
 

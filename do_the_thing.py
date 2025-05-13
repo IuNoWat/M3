@@ -20,7 +20,8 @@ FULLSCREEN=True
 RESET_ANIMATION_TIME=40
 
 try :
-    sys.argv[1]
+    if sys.argv[1]=="debug" :
+        DEBUG=True
 except IndexError :
     DEBUG=False
 
@@ -56,12 +57,12 @@ texts=[
 
 #POSITION OF NUMBERS
 number_pos=[
-    (100,450 ),
-    (350,450 ),
-    (600,450 ),
-    (850,450 ),
-    (1100,450),
-    (1350,450),
+    (100, 100 ),
+    (350, 100 ),
+    (600, 100 ),
+    (850, 100 ),
+    (1100,100),
+    (1350,100),
 ]
 
 #NUMBER CLASS
@@ -112,8 +113,6 @@ class Number() :
 
         if self.animation_playing :
             self.current_pos=(self.pos[0]+random.randrange(-RESET_ANIMATION_TIME+self.woobling_timer,RESET_ANIMATION_TIME-self.woobling_timer),self.pos[1]+random.randrange(-RESET_ANIMATION_TIME+self.woobling_timer,RESET_ANIMATION_TIME-self.woobling_timer))
-            #elf.current_pos[0]=self.pos[0]+random.randrange(-RESET_ANIMATION_TIME+self.woobling_timer,RESET_ANIMATION_TIME-self.woobling_timer)
-            #elf.current_pos[1]=self.pos[1]+random.randrange(-RESET_ANIMATION_TIME+self.woobling_timer,RESET_ANIMATION_TIME-self.woobling_timer)
         else :
             self.current_pos=self.pos
         return to_return
@@ -148,11 +147,20 @@ while running :
 
     #Value update
     arduino_values=thread.get_msg()
-
-    #Numbers rendering
-    for number in NUMBERS :
-        number.update(arduino_values)
-        SCREEN.blit(number.render(),number.current_pos)
+       
+    if reset_timer>0 :
+        reset_timer-=1
+        if reset_timer==0 :
+            to_give=[0,1,2,3,4,5]
+            for i,number in enumerate(NUMBERS) :
+                new_number=random.choice(to_give)
+                if i!=0 :
+                    while new_number==number.txt_number :
+                        new_number=random.choice(to_give)
+                else :
+                    new_number=number[5].txt_number
+                number.txt_number=new_number
+                to_give.remove(new_number)
     
     #Victory check
     good_cables=0
@@ -160,21 +168,10 @@ while running :
         if number.status==True :
             good_cables+=1
     
-    if good_cables==6 :
+    if good_cables==6 and reset_timer==0 :
         for number in NUMBERS :
             number.start_reset_anim()
             reset_timer=RESET_ANIMATION_TIME-4
-    
-    if reset_timer>0 :
-        reset_timer-=1
-        if reset_timer==0 :
-            to_give=[0,1,2,3,4,5]
-            for i,number in enumerate(NUMBERS) :
-                new_number=random.choice(to_give)
-                while new_number==number.txt_number :
-                    new_number=random.choice(to_give)
-                number.txt_number=new_number
-                to_give.remove(new_number)
                 
     #Show FPS
     if DEBUG :
@@ -182,6 +179,11 @@ while running :
         txt = "DEBUG MODE | FPS : "+fps+f" | Data from arduino : {arduino_values} | Error passed in arduino thread : "+str(thread.unicode_error)
         to_blit=debug_font.render(txt,1,WHITE,COLOR_BG)
         SCREEN.blit(to_blit,(0,0))
+
+    #Numbers rendering
+    for number in NUMBERS :
+        number.update(arduino_values)
+        SCREEN.blit(number.render(),number.current_pos)
 
     #End of loop
     pygame.display.flip()
