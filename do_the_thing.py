@@ -18,8 +18,8 @@ FULLSCREEN=True
 DEBUG=True
 
 #ASSETS
-NUM_FONT_PATH="assets/DS-DIGI.TTF"
-TXT_FONT_PATH="assets/Rubik-VariableFont_wght.ttf"
+NUM_FONT_PATH="/home/vaisseau/Desktop/M3/assets/DS-DIGI.TTF"
+TXT_FONT_PATH="/home/vaisseau/Desktop/M3/assets/Rubik-VariableFont_wght.ttf"
 
 #COLORS
 WHITE=pygame.Color("White")

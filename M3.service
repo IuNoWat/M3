@@ -1,0 +1,14 @@
+[Unit]
+Description=Dispositif M3 de l'exposition MAISON du vaisseau.
+
+[Service]
+Type=simple
+
+User=vaisseau
+ExecStart=/usr/bin/python3 /home/vaisseau/Desktop/M3/do_the_thing.py
+
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -29,7 +29,6 @@ class Arduino(Thread) :
 
 if __name__=="__main__" :
     while True :
-        pass
         rah=Arduino()
         rah.start()
         for i in range(0,10) :
