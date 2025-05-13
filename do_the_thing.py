@@ -10,6 +10,7 @@ from pygame.locals import *
 
 pygame.init()
 pygame.font.init()
+pygame.mouse.set_visible(False)
 
 import arduino_serial as arduino
 
