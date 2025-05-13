@@ -158,10 +158,15 @@ while running :
                     while new_number==number.txt_number :
                         new_number=random.choice(to_give)
                 else :
-                    new_number=number[5].txt_number
+                    new_number=NUMBERS[5].txt_number
                 number.txt_number=new_number
                 to_give.remove(new_number)
-    
+
+    #Numbers rendering
+    for number in NUMBERS :
+        number.update(arduino_values)
+        SCREEN.blit(number.render(),number.current_pos)
+
     #Victory check
     good_cables=0
     for number in NUMBERS :
@@ -171,19 +176,14 @@ while running :
     if good_cables==6 and reset_timer==0 :
         for number in NUMBERS :
             number.start_reset_anim()
-            reset_timer=RESET_ANIMATION_TIME-4
+            reset_timer=RESET_ANIMATION_TIME
                 
     #Show FPS
     if DEBUG :
         fps = str(round(CLOCK.get_fps(),1))
-        txt = "DEBUG MODE | FPS : "+fps+f" | Data from arduino : {arduino_values} | Error passed in arduino thread : "+str(thread.unicode_error)
+        txt = "DEBUG MODE | FPS : "+fps+f" | Reset_timer : {reset_timer} | Data from arduino : {arduino_values} | Error passed in arduino thread : "+str(thread.unicode_error)
         to_blit=debug_font.render(txt,1,WHITE,COLOR_BG)
         SCREEN.blit(to_blit,(0,0))
-
-    #Numbers rendering
-    for number in NUMBERS :
-        number.update(arduino_values)
-        SCREEN.blit(number.render(),number.current_pos)
 
     #End of loop
     pygame.display.flip()
