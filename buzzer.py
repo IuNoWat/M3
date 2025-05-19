@@ -1,9 +1,12 @@
-
+#!/usr/bin/python
+#coding: utf-8
 
 import time
 import os
 
 import pigpio
+
+import music_bib
 
 #CONSTANTS
 os.system("sudo pigpiod")
@@ -32,42 +35,51 @@ notes={
 " ":[0]
 }
 
-#CLASS
-class Music() :
-    def __init__(self,interval=0.1) :
-        self.interval=interval
-
-time_note=0.2
+#EXAMPLE MUSIC
+default_music=mega=[
+{"note":"D","oct":5,"time":1},
+{"note":"D","oct":5,"time":1},
+{"note":"D","oct":6,"time":1},
+{"note":" ","oct":0,"time":1},
+{"note":"A","oct":5,"time":1},
+{"note":" ","oct":0,"time":1},
+{"note":" ","oct":0,"time":1},
+{"note":"G#","oct":5,"time":1},
+{"note":" ","oct":0,"time":1},
+{"note":"G","oct":5,"time":1},
+{"note":" ","oct":0,"time":1},
+{"note":"F","oct":5,"time":1},
+{"note":" ","oct":0,"time":1},
+{"note":"D","oct":5,"time":1},
+{"note":"F","oct":5,"time":1},
+{"note":"G","oct":5,"time":1}
+]
 
 def play_note(note,duree,oct=DEFAULT_OCTAVE,duty=DEFAULT_DUTY) :
     PI.hardware_PWM(PIN,notes[note][oct],duty)
     time.sleep(duree)
     PI.hardware_PWM(PIN,0,duty)
 
-def play_music(music,base_interval=0.1) :
+def play_music(music=default_music,base_interval=0.15) :
     for i,note in enumerate(music) :
         play_note(note["note"],base_interval*note["time"],note["oct"])
-
-zelda=[
-{"note":"G","oct":5,"time":1},
-{"note":"F","oct":5,"time":1},
-{"note":"D","oct":5,"time":1},
-{"note":"A","oct":4,"time":1},
-{"note":"G","oct":4,"time":1},
-{"note":"E","oct":5,"time":1},
-{"note":"G","oct":5,"time":1},
-{"note":"C","oct":6,"time":1}
-]
-
-play_music(zelda)
 
 def play_all_notes(interval) :
     for i in range(0,9) :
         for key in notes :
-            print(f"Playing note {key} at octave {i} : {notes[key][i]}")
-            PI.hardware_PWM(PIN,notes[key][i],500000)
-            time.sleep(interval)
+            if key!=" " :
+                print(f"Playing note {key} at octave {i} : {notes[key][i]}")
+                PI.hardware_PWM(PIN,notes[key][i],500000)
+                time.sleep(interval)
+            else :
+                print(f"Playing note {key} at octave {i} : {notes[key][0]}")
+                PI.hardware_PWM(PIN,notes[key][0],500000)
+                time.sleep(interval)
+
     PI.hardware_PWM(PIN,0,500000)
 
 
 
+if __name__=="__main__" :
+    play_music()
+    play_all_notes(0.1)

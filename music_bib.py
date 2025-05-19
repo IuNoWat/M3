@@ -1,4 +1,5 @@
-
+#!/usr/bin/python
+#coding: utf-8
 
 mega=[
 {"note":"D","oct":5,"time":1},
