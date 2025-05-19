@@ -53,5 +53,5 @@ Il y a toujours un problème de connexion ssh. Via routeur, la connexion n'est p
 
 ## 2025_07_15
 La connexion par routeur reste très stable, je crois que le problème est causé par la mise en veille de l'ordinateur
-- L'implémentation de buzzer.py est fini, et un pilote disponible dans Templates
+- L'implémentation de buzzer.py est fini, et un pilote est disponible dans Templates
 - J'ai ajouté un timer de victoire

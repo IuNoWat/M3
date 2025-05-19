@@ -148,8 +148,6 @@ while running :
         if event.type == pygame.QUIT:
             running = False
             thread.join()
-        #if pygame.mouse.get_pressed() :
-        #    running = False
 
     #Value update
     arduino_values=thread.get_msg()
