@@ -33,7 +33,6 @@ notes={
 }
 
 #CLASS
-
 class Music() :
     def __init__(self,interval=0.1) :
         self.interval=interval
@@ -71,5 +70,4 @@ def play_all_notes(interval) :
     PI.hardware_PWM(PIN,0,500000)
 
 
-#play_all_notes(0.1)
 
