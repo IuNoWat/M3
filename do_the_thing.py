@@ -128,7 +128,7 @@ CLOCK = pygame.time.Clock()
 good_cables=0
 reset_timer=0
 victory_timer=0
-victory_sound=buzzer.Sound(buzzer.default_music)
+
 
 NUMBERS=[]
 for i,pos in enumerate(number_pos) :
@@ -182,15 +182,16 @@ while running :
     
     #Victory check
     if good_cables==6 and reset_timer==0 :
-        #buzzer.play_music()
+        victory_sound=buzzer.Sound(buzzer.default_music)
         victory_sound.start()
-        victory_timer=1
+        victory_timer=90
     
     #Victory timer handling
     if victory_timer>0 :
         victory_timer-=1
         if victory_timer==0 :
             for number in NUMBERS :
+                victory_sound.join()
                 number.start_reset_anim()
                 reset_timer=RESET_ANIMATION_TIME
                 
