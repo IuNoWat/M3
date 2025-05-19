@@ -1,6 +1,7 @@
 #!/usr/bin/python
 #coding: utf-8
 
+#First notes of Megalovania
 mega=[
 {"note":"D","oct":5,"time":1},
 {"note":"D","oct":5,"time":1},
@@ -20,6 +21,7 @@ mega=[
 {"note":"G","oct":5,"time":1}
 ]
 
+#"Secret found" from zelda
 zelda=[
 {"note":"G","oct":5,"time":1},
 {"note":"F","oct":5,"time":1},

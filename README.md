@@ -41,8 +41,17 @@ L'intégration est finie et tout fonctionne
 
 ## 2025_07_09
 Pour ajouter le buzzer, j'ai dù installer pigpio, ce qui m'a obligé à crer un environnement virtuel qui se trouve ici : /home/vaisseau/Desktop/M3_env
+Il faut y installer les dépendances suivantes :
+- pip install pygame
+- pip install pigpio
+- pip install pyserial
 
 ## 2025_07_13
 Il y a toujours un problème de connexion ssh. Via routeur, la connexion n'est pas très stable, en connexion ethernet directe, c'est encore pire, la pi se déconnecte toute seule quelques minutes après le branchement. plusieurs pistes doivent êtres explorées :
 - Pour la connexion ethernet : https://raspberrypi.stackexchange.com/questions/147853/raspberry-pi-disconnects-from-ssh-intermittently
 - Pour la connexion routeur : essayer la modif écrite ici : https://forums.raspberrypi.com/viewtopic.php?t=138631&start=100
+
+## 2025_07_15
+La connexion par routeur reste très stable, je crois que le problème est causé par la mise en veille de l'ordinateur
+- L'implémentation de buzzer.py est fini, et un pilote disponible dans Templates
+- J'ai ajouté un timer de victoire
