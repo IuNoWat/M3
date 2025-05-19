@@ -35,3 +35,7 @@ L'intégration est finie et tout fonctionne
     J'ai un message d'erreur, mais cela fonctionne, alors je reste comme ça
 - L'Arduino n'a pas fait des siennes, j'en déduis que j'avais raison hier
 - Je note toujours quelques faux positifs assez surprenant, je vais continuer à en chercher la cause.
+
+## 2025_07_09
+Pour ajouter le buzzer, j'ai dù installer pigpio, ce qui m'a obligé à crer un environnement virtuel qui se trouve ici : /home/vaisseau/Desktop/M3_env
+
