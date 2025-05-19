@@ -181,7 +181,7 @@ while running :
             good_cables+=1
     
     #Victory check
-    if good_cables==6 and reset_timer==0 :
+    if good_cables==6 and reset_timer==0 and victory_timer==0 :
         victory_sound=buzzer.Sound(buzzer.default_music)
         victory_sound.start()
         victory_timer=90
