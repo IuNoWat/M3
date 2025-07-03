@@ -14,8 +14,10 @@ Activer le système : sudo systemctl daemon-reload
 Activer le service : sudo systemctl enable M3.service
 Tester le service : sudo systemctl start M3.service
 
-### Enlever le curseur
-Ajouter la ligne xserver-command = X -nocursor à la fin du fichier /etc/lightdm/lightdm.conf
+## Tutoriels
+- Communication Raspi/Arduino : https://www.aranacorp.com/fr/communication-serie-entre-raspberry-pi-et-arduino/
+- Utiliser RunningAverage.h : https://github.com/RobTillaart/RunningAverage
+- Utiliser systemd : https://www.thedigitalpictureframe.com/ultimate-guide-systemd-autostart-scripts-raspberry-pi/
 
 # Journal
 
