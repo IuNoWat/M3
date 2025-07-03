@@ -76,7 +76,7 @@ void loop() {
 }
 
 String check_avg(float to_check) {
-  if(to_check<0.05){
+  if(to_check<0.1){
     return "0";
   }
   for(int i=1;i<6;i++){
