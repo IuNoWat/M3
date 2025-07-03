@@ -8,11 +8,11 @@ Rien de particulier à faire, télécharger la dernière version de Raspberry OS
 
 ### Activer le lancement automatique via SystemD
 
-Copier le fichier .service dans le répertoire approprié : sudo cp M3.service /etc/systemd/system/M3.service
-Changer ses permissions : sudo chmod 644 /etc/systemd/system/M3.service
-Activer le système : sudo systemctl daemon-reload
-Activer le service : sudo systemctl enable M3.service
-Tester le service : sudo systemctl start M3.service
+- Copier le fichier .service dans le répertoire approprié : sudo cp M3.service /etc/systemd/system/M3.service
+- Changer ses permissions : sudo chmod 644 /etc/systemd/system/M3.service
+- Activer le système : sudo systemctl daemon-reload
+- Activer le service : sudo systemctl enable M3.service
+- Tester le service : sudo systemctl start M3.service
 
 ## Tutoriels
 - Communication Raspi/Arduino : https://www.aranacorp.com/fr/communication-serie-entre-raspberry-pi-et-arduino/
