@@ -21,6 +21,9 @@ Rien de particulier à faire, télécharger la dernière version de Raspberry OS
 
 # Journal
 
+## Infos Techniques
+
+
 ## 2025_07_02
 Le tout fonctionne en théorie, mais plusieurs points sont à surveiller :
 - On note encore quelques faux positifs dans les données arduino, mais je soupçonne les jumpers, qui sont un peu fatigués
