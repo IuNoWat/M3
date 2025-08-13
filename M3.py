@@ -49,9 +49,9 @@ except IndexError :
 NUM_FONT_PATH=DIR+"M3/assets/DS-DIGI.TTF"
 TXT_FONT_PATH=DIR+"M3/assets/Rubik-VariableFont_wght.ttf"
 #IMG
-plug_male=DIR+"M3/assets/plug_male.png"
-plug_female=DIR+"M3/assets/plug_female.png"
-elec=DIR+"M3/assets/elec.png"
+#plug_male=DIR+"M3/assets/plug_male.png"
+#plug_female=DIR+"M3/assets/plug_female.png"
+#elec=DIR+"M3/assets/elec.png"
 
 #STYLE
 WHITE=pygame.Color("White")
