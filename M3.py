@@ -1,33 +1,28 @@
-#!/usr/bin/python
-#coding: utf-8
-
-import time
-import random
 import sys
+import random
+import time
 import os
 
 import pygame
-from pygame.locals import *
-
 pygame.init()
-pygame.font.init()
-pygame.mouse.set_visible(False)
 
+#from tools import *
 import arduino_serial as arduino
 os.system("sudo pigpiod") #pigpoid needs to be launched before importing the buzzer library
 import buzzer
 
 #CONSTANTS
 FPS=30
+DIR="/home/vaisseau/Desktop/"
 SCREEN_SIZE=(1920, 1080)
 FULLSCREEN=True
-RESET_ANIMATION_TIME=40
-
+#Define DEBUG
 try :
     if sys.argv[1]=="debug" :
         DEBUG=True
 except IndexError :
     DEBUG=False
+    pygame.mouse.set_visible(False)
 
 #DATA
 
@@ -47,13 +42,18 @@ except IndexError :
 #Seche-linge : 301 kWh
 #Refrigerateur : 346 kWh
 
-#STYLE OF THE APP
+#Animation CONSTANTS
 
-#ASSETS
-NUM_FONT_PATH="/home/vaisseau/Desktop/M3/assets/DS-DIGI.TTF"
-TXT_FONT_PATH="/home/vaisseau/Desktop/M3/assets/Rubik-VariableFont_wght.ttf"
+#ASSETS LOAD
+#FONTS
+NUM_FONT_PATH=DIR+"M3/assets/DS-DIGI.TTF"
+TXT_FONT_PATH=DIR+"M3/assets/Rubik-VariableFont_wght.ttf"
+#IMG
+plug_male=DIR+"M3/assets/plug_male.png"
+plug_female=DIR+"M3/assets/plug_female.png"
+elec=DIR+"M3/assets/elec.png"
 
-#COLORS
+#STYLE
 WHITE=pygame.Color("White")
 BLACK=pygame.Color("Black")
 GREEN=pygame.Color("Green")
@@ -61,10 +61,11 @@ RED=pygame.Color("Red")
 COLOR_BG=pygame.Color(22,13,34,255)
 COLOR_HL=pygame.Color(255,255,255,255)
 
-FONT_SIZE=30
+NUM_FONT_SIZE=30
 FONT_STYLE=NUM_FONT_PATH
 FONT_COLOR=COLOR_HL
 
+pygame.font.init()
 debug_font=pygame.font.Font(TXT_FONT_PATH,16)
 
 #GAMEPLAY
@@ -87,139 +88,134 @@ number_pos=[
     (1350,100),
 ]
 
-#NUMBER CLASS
-class Number() :
-    def __init__(self,pos,analogEntry,txt_number) :
+
+#ENGINE
+
+class Anim() : #Use this class as base for animations, see below with the Pop example
+    def __init__(self,max_frame,loop=False) :
+        self.max_frame=max_frame
+        self.current_frame=0
+        self.method=print
+        self.finished=False
+        self.loop=loop
+    def anim(self) :
+        self.method(self.current_frame)
+        self.current_frame=self.current_frame+1
+        if self.current_frame==self.max_frame :
+            if self.loop :
+                self.current_frame=0
+            else :
+                self.finished=True
+
+class Pop(Anim) : # The Pop anim will play the moove method each frame until the max frame is reached
+    def moove(self,current_frame) :
+        self.img.set_alpha(255-current_frame*16)
+        center_blit(SCREEN,self.img,(self.pos[0],self.pos[1]-current_frame*3))
+    def __init__(self,max_frame,img,pos) :
+        Anim.__init__(self,max_frame)
+        self.img=img
         self.pos=pos
-        self.current_pos=pos
-        self.analogEntry=analogEntry
-        self.value=False
-        self.txt_number=txt_number
-        self.int_number=int(txt_number)
-        self.status="unconnected"
-        self.woobling_timer=0
-        self.animation_playing=False
-        #Style des nombres
-        self.font_size=20
-        self.font = pygame.font.Font(NUM_FONT_PATH,FONT_SIZE)
-    def update(self,last_values) :
-        self.value=last_values[self.analogEntry]
-        if self.value=="6" :
-            self.status="unconnected"
-        elif self.value==self.int_number :
-            self.status=True
-        else :
-            self.status=False
-        
-        if self.woobling_timer>0 :
-            self.woobling_timer-=1
-        if self.woobling_timer==0 :
-            self.animation_playing=False
+        self.method=self.moove
+    def anim(self) :
+        print(self.current_frame)
+        Anim.anim(self)
 
-    def start_reset_anim(self) :
-        if self.animation_playing==False : 
-            self.woobling_timer=RESET_ANIMATION_TIME
-            self.animation_playing=True
+#SPECIFIC ENGINE
 
-    def render(self) :
-        if DEBUG :
-            txt=f"{self.value} - "+texts[self.txt_number]+f" ({self.txt_number})"
+class Number(Anim) :
+    def render(self,current_frame) :
+        match self.mode :
+            case "IDLE" :
+                center_blit(SCREEN,self.rendered_idle,self.pos)
+            case "GOOD" :
+                center_blit(SCREEN,self.rendered_good,self.pos)
+            case "BAD" :
+                center_blit(SCREEN,self.rendered_bad,self.pos)
+            case "CHANGE" :
+                center_blit(SCREEN,self.rendered_idle,self.pos)
+            case _ :
+                center_blit(SCREEN,self.rendered_idle,self.pos)
+    def __init__(self,max_frame,num,txt,pos,loop) :
+        Anim.__init__(self,max_frame,loop)
+        #Engine
+        self.num=num
+        self.current_num="6"
+        self.mode="IDLE"
+        self.status="no_con"
+        self.txt=txt
+        #style
+        self.font = pygame.font.Font(NUM_FONT_PATH,NUM_FONT_SIZE)
+        #Render
+        self.pos=pos
+        self.method=self.render
+        self.internal_frame=0
+        self.rendered_good=self.font.render(self.txt,1,GREEN,COLOR_BG)
+        self.rendered_bad=self.font.render(self.txt,1,RED,COLOR_BG)
+        self.rendered_idle=self.font.render(self.txt,1,COLOR_HL,COLOR_BG)
+    def update(self,value) :
+        self.current_num=value
+        if self.current_num=="6" :
+            self.status="no_con"
+            self.mode="IDLE"
+        elif self.current_num==self.num :
+            self.status="good_con"
+            self.mode="GOOD"
         else :
-            txt=texts[self.txt_number]
+            self.status="bad_con"
+            self.mode="BAD"
+    def anim(self) :
+        Anim.anim(self)
 
-        if self.status=="unconnected" :
-            to_return=self.font.render(txt,1,COLOR_HL,COLOR_BG)
-        elif self.status :
-            to_return=self.font.render(txt,1,GREEN,COLOR_BG)
-        else :
-            to_return=self.font.render(txt,1,RED,COLOR_BG)
-
-        if self.animation_playing :
-            self.current_pos=(self.pos[0]+random.randrange(-RESET_ANIMATION_TIME+self.woobling_timer,RESET_ANIMATION_TIME-self.woobling_timer),self.pos[1]+random.randrange(-RESET_ANIMATION_TIME+self.woobling_timer,RESET_ANIMATION_TIME-self.woobling_timer))
-        else :
-            self.current_pos=self.pos
-        return to_return
 
 #MAINLOOP PREPARATION
-running=True
+ANIMATIONS=[]
+
+#MAINLOOP
+on=True
 SCREEN = pygame.display.set_mode(SCREEN_SIZE,pygame.FULLSCREEN)
 CLOCK = pygame.time.Clock()
-good_cables=0
-reset_timer=0
-victory_timer=0
-
-
-NUMBERS=[]
-for i,pos in enumerate(number_pos) :
-    NUMBERS.append(Number(pos,i,i))
+GOOD=0
 
 #Launching thread
 thread=arduino.Arduino()
 thread.start()
 
-#MAINLOOP
-while running :
+for i,entry in enumerate(texts) :
+    ANIMATIONS.append(Number(30,str(i),texts[i],number_pos[i],loop=True))
+
+while on :
     #Cleaning of Screen
     SCREEN.fill(COLOR_BG)
 
     #Event handling
     for event in pygame.event.get():
+        keys = pygame.key.get_pressed()
         if event.type == pygame.QUIT:
-            running = False
-            thread.join()
+            on = False
+        if keys[pygame.K_ESCAPE] : # ECHAP : Quitter
+            on=False
 
     #Value update
     arduino_values=thread.get_msg()
-    
-    #Reset handling
-    if reset_timer>0 :
-        reset_timer-=1
-        if reset_timer==0 :
-            to_give=[0,1,2,3,4,5]
-            for i,number in enumerate(NUMBERS) :
-                new_number=random.choice(to_give)
-                if i!=0 :
-                    while new_number==number.txt_number :
-                        new_number=random.choice(to_give)
-                else :
-                    new_number=NUMBERS[5].txt_number
-                number.txt_number=new_number
-                to_give.remove(new_number)
+    GOOD=0
+    for i,entry in enumerate(ANIMATIONS) :
+        entry.update(arduino_values[i])
+        if entry.status=="good_con" :
+            GOOD=GOOD+1
 
-    #Numbers rendering
-    for number in NUMBERS :
-        number.update(arduino_values)
-        SCREEN.blit(number.render(),number.current_pos)
+    #Animation handling
+    for i,animation in enumerate(ANIMATIONS) :
+        animation.anim()
+        if animation.finished :
+            ANIMATIONS.pop(i)
 
-    #Check of good cables
-    good_cables=0
-    for number in NUMBERS :
-        if number.status==True :
-            good_cables+=1
-    
-    #Victory check
-    if good_cables==6 and reset_timer==0 and victory_timer==0 :
-        victory_sound=buzzer.Sound(buzzer.default_music)
-        victory_sound.start()
-        victory_timer=90
-    
-    #Victory timer handling
-    if victory_timer>0 :
-        victory_timer-=1
-        if victory_timer==0 :
-            for number in NUMBERS :
-                victory_sound.join()
-                number.start_reset_anim()
-                reset_timer=RESET_ANIMATION_TIME
-                
-    #Show FPS
+    #Show DEBUG
     if DEBUG :
         fps = str(round(CLOCK.get_fps(),1))
-        txt = "DEBUG MODE | FPS : "+fps+f" | Reset_timer : {reset_timer} | Data from arduino : {arduino_values} | Error passed in arduino thread : "+str(thread.unicode_error)
+        txt = f"DEBUG MODE | FPS : {fps} | GOOD : {GOOD}"
         to_blit=debug_font.render(txt,1,WHITE,COLOR_BG)
         SCREEN.blit(to_blit,(0,0))
 
     #End of loop
-    pygame.display.flip()
-    CLOCK.tick(FPS)
-
+    pygame.display.update()
+    CLOCK.tick(FPS) 
