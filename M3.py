@@ -6,7 +6,7 @@ import os
 import pygame
 pygame.init()
 
-#from tools import *
+from tools import *
 import arduino_serial as arduino
 os.system("sudo pigpiod") #pigpoid needs to be launched before importing the buzzer library
 import buzzer
@@ -15,6 +15,7 @@ import buzzer
 FPS=30
 DIR="/home/vaisseau/Desktop/"
 SCREEN_SIZE=(1920, 1080)
+SCREEN = pygame.display.set_mode(SCREEN_SIZE,pygame.FULLSCREEN)
 FULLSCREEN=True
 #Define DEBUG
 try :
@@ -49,9 +50,13 @@ except IndexError :
 NUM_FONT_PATH=DIR+"M3/assets/DS-DIGI.TTF"
 TXT_FONT_PATH=DIR+"M3/assets/Rubik-VariableFont_wght.ttf"
 #IMG
-#plug_male=DIR+"M3/assets/plug_male.png"
-#plug_female=DIR+"M3/assets/plug_female.png"
-#elec=DIR+"M3/assets/elec.png"
+plug_male_good=pygame.transform.scale_by(pygame.image.load(DIR+"M3/assets/plug_male_good.png").convert_alpha(),0.4)
+plug_male_bad=pygame.transform.scale_by(pygame.image.load(DIR+"M3/assets/plug_male_bad.png").convert_alpha(),0.4)
+plug_male_idle=pygame.transform.scale_by(pygame.image.load(DIR+"M3/assets/plug_male_idle.png").convert_alpha(),0.4)
+plug_female_good=pygame.transform.scale_by(pygame.image.load(DIR+"M3/assets/plug_female_good.png").convert_alpha(),0.4)
+plug_female_bad=pygame.transform.scale_by(pygame.image.load(DIR+"M3/assets/plug_female_bad.png").convert_alpha(),0.4)
+plug_female_idle=pygame.transform.scale_by(pygame.image.load(DIR+"M3/assets/plug_female_idle.png").convert_alpha(),0.4)
+#elec=pygame.image.load(DIR+"M3/assets/elec.png").convert_alpha()
 
 #STYLE
 WHITE=pygame.Color("White")
@@ -61,7 +66,7 @@ RED=pygame.Color("Red")
 COLOR_BG=pygame.Color(22,13,34,255)
 COLOR_HL=pygame.Color(255,255,255,255)
 
-NUM_FONT_SIZE=30
+NUM_FONT_SIZE=50
 FONT_STYLE=NUM_FONT_PATH
 FONT_COLOR=COLOR_HL
 
@@ -80,12 +85,12 @@ texts=[
 
 #POSITION OF NUMBERS
 number_pos=[
-    (100, 100 ),
-    (350, 100 ),
-    (600, 100 ),
-    (850, 100 ),
-    (1100,100),
-    (1350,100),
+    (320*0+320/2, 50 ),
+    (320*1+320/2, 50 ),
+    (320*2+320/2, 50 ),
+    (320*3+320/2, 50 ),
+    (320*4+320/2, 50),
+    (320*5+320/2, 50),
 ]
 
 
@@ -127,10 +132,19 @@ class Number(Anim) :
         match self.mode :
             case "IDLE" :
                 center_blit(SCREEN,self.rendered_idle,self.pos)
+                center_blit(SCREEN,plug_female_idle,(self.pos[0],self.pos[1]+60))
             case "GOOD" :
                 center_blit(SCREEN,self.rendered_good,self.pos)
+                center_blit(SCREEN,plug_male_good,(self.pos[0]-35,self.pos[1]+60))
+                center_blit(SCREEN,plug_female_good,(self.pos[0]+35,self.pos[1]+60))
             case "BAD" :
                 center_blit(SCREEN,self.rendered_bad,self.pos)
+                if current_frame<3 :
+                    center_blit(SCREEN,plug_male_bad,(self.pos[0]-100,self.pos[1]+60))
+                    center_blit(SCREEN,plug_female_bad,(self.pos[0]+100,self.pos[1]+60))
+                elif current_frame<10 :
+                    center_blit(SCREEN,plug_male_bad,(self.pos[0]-100+(current_frame-3)*9,self.pos[1]+60))
+                    center_blit(SCREEN,plug_female_bad,(self.pos[0]+100-(current_frame-3)*9,self.pos[1]+60))
             case "CHANGE" :
                 center_blit(SCREEN,self.rendered_idle,self.pos)
             case _ :
@@ -166,13 +180,12 @@ class Number(Anim) :
     def anim(self) :
         Anim.anim(self)
 
-
 #MAINLOOP PREPARATION
+NUMBER_ANIMATIONS=[]
 ANIMATIONS=[]
 
 #MAINLOOP
 on=True
-SCREEN = pygame.display.set_mode(SCREEN_SIZE,pygame.FULLSCREEN)
 CLOCK = pygame.time.Clock()
 GOOD=0
 
@@ -181,7 +194,7 @@ thread=arduino.Arduino()
 thread.start()
 
 for i,entry in enumerate(texts) :
-    ANIMATIONS.append(Number(30,str(i),texts[i],number_pos[i],loop=True))
+    NUMBER_ANIMATIONS.append(Number(10,str(i),texts[i],number_pos[i],loop=True))
 
 while on :
     #Cleaning of Screen
@@ -192,17 +205,27 @@ while on :
         keys = pygame.key.get_pressed()
         if event.type == pygame.QUIT:
             on = False
+            thread.on=False
+            thread.join()
         if keys[pygame.K_ESCAPE] : # ECHAP : Quitter
             on=False
+            thread.on=False
+            thread.join()
 
     #Value update
     arduino_values=thread.get_msg()
     GOOD=0
-    for i,entry in enumerate(ANIMATIONS) :
+    for i,entry in enumerate(NUMBER_ANIMATIONS) :
         entry.update(arduino_values[i])
         if entry.status=="good_con" :
             GOOD=GOOD+1
 
+    #Numbers handling
+    for i,animation in enumerate(NUMBER_ANIMATIONS) :
+        animation.anim()
+        if animation.finished :
+            NUMBER_ANIMATIONS.pop(i)
+    
     #Animation handling
     for i,animation in enumerate(ANIMATIONS) :
         animation.anim()
