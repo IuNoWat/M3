@@ -29,6 +29,24 @@ try :
 except IndexError :
     DEBUG=False
 
+#DATA
+
+#M3 - Salon
+#Lampe : 4 kWh
+#Imprimante : 12 kWh
+#Box Internet : 97 kWh
+#Console : 103 kWh
+#PC Fixe : 123 kWh
+#Télévision : 162 kWh
+
+#M3 - Cuisine
+#Micro-Onde : 39 kWh
+#Bouilloire : 49 kWh
+#Plaques de cuisson : 131 kWh
+#Lave-vaisselle : 162 kWh
+#Seche-linge : 301 kWh
+#Refrigerateur : 346 kWh
+
 #STYLE OF THE APP
 
 #ASSETS
@@ -51,12 +69,12 @@ debug_font=pygame.font.Font(TXT_FONT_PATH,16)
 
 #GAMEPLAY
 texts=[
-    "0 kWh",
-    "4 kWh",
-    "25 kWh",
-    "357 kWh",
-    "700 kWh",
-    "2 000 kWh"
+    "39 kWh",
+    "49 kWh",
+    "131 kWh",
+    "162 kWh",
+    "301 kWh",
+    "346 kWh"
 ]
 
 #POSITION OF NUMBERS
@@ -77,6 +95,7 @@ class Number() :
         self.analogEntry=analogEntry
         self.value=False
         self.txt_number=txt_number
+        self.int_number=int(txt_number)
         self.status="unconnected"
         self.woobling_timer=0
         self.animation_playing=False
@@ -87,7 +106,7 @@ class Number() :
         self.value=last_values[self.analogEntry]
         if self.value=="6" :
             self.status="unconnected"
-        elif self.value==str(self.txt_number) :
+        elif self.value==self.int_number :
             self.status=True
         else :
             self.status=False
