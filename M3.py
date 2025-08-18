@@ -8,8 +8,6 @@ pygame.init()
 
 from tools import *
 import arduino_serial as arduino
-os.system("sudo pigpiod") #pigpoid needs to be launched before importing the buzzer library
-import buzzer
 
 #CONSTANTS
 FPS=30
@@ -24,6 +22,16 @@ try :
 except IndexError :
     DEBUG=False
     pygame.mouse.set_visible(False)
+
+#GAMEPLAY
+txt=[
+    "39 kWh",
+    "49 kWh",
+    "131 kWh",
+    "162 kWh",
+    "301 kWh",
+    "346 kWh"
+]
 
 #DATA
 
@@ -43,8 +51,6 @@ except IndexError :
 #Seche-linge : 301 kWh
 #Refrigerateur : 346 kWh
 
-#Animation CONSTANTS
-
 #ASSETS LOAD
 #FONTS
 NUM_FONT_PATH=DIR+"M3/assets/DS-DIGI.TTF"
@@ -56,7 +62,7 @@ plug_male_idle=pygame.transform.scale_by(pygame.image.load(DIR+"M3/assets/plug_m
 plug_female_good=pygame.transform.scale_by(pygame.image.load(DIR+"M3/assets/plug_female_good.png").convert_alpha(),0.4)
 plug_female_bad=pygame.transform.scale_by(pygame.image.load(DIR+"M3/assets/plug_female_bad.png").convert_alpha(),0.4)
 plug_female_idle=pygame.transform.scale_by(pygame.image.load(DIR+"M3/assets/plug_female_idle.png").convert_alpha(),0.4)
-#elec=pygame.image.load(DIR+"M3/assets/elec.png").convert_alpha()
+elec=pygame.transform.scale_by(pygame.image.load(DIR+"M3/assets/elec.png").convert_alpha(),0.2)
 
 #STYLE
 WHITE=pygame.Color("White")
@@ -66,33 +72,91 @@ RED=pygame.Color("Red")
 COLOR_BG=pygame.Color(22,13,34,255)
 COLOR_HL=pygame.Color(255,255,255,255)
 
-NUM_FONT_SIZE=50
+NUM_FONT_SIZE=70
 FONT_STYLE=NUM_FONT_PATH
 FONT_COLOR=COLOR_HL
 
 pygame.font.init()
 debug_font=pygame.font.Font(TXT_FONT_PATH,16)
+num_font = pygame.font.Font(NUM_FONT_PATH,NUM_FONT_SIZE)
 
-#GAMEPLAY
-texts=[
-    "39 kWh",
-    "49 kWh",
-    "131 kWh",
-    "162 kWh",
-    "301 kWh",
-    "346 kWh"
+rendered_good=[
+    num_font.render(txt[0],1,GREEN,COLOR_BG),
+    num_font.render(txt[1],1,GREEN,COLOR_BG),
+    num_font.render(txt[2],1,GREEN,COLOR_BG),
+    num_font.render(txt[3],1,GREEN,COLOR_BG),
+    num_font.render(txt[4],1,GREEN,COLOR_BG),
+    num_font.render(txt[5],1,GREEN,COLOR_BG),
+]
+
+rendered_bad=[
+    num_font.render(txt[0],1,RED,COLOR_BG),
+    num_font.render(txt[1],1,RED,COLOR_BG),
+    num_font.render(txt[2],1,RED,COLOR_BG),
+    num_font.render(txt[3],1,RED,COLOR_BG),
+    num_font.render(txt[4],1,RED,COLOR_BG),
+    num_font.render(txt[5],1,RED,COLOR_BG),
+]
+
+rendered_idle=[
+    num_font.render(txt[0],1,COLOR_HL,COLOR_BG),
+    num_font.render(txt[1],1,COLOR_HL,COLOR_BG),
+    num_font.render(txt[2],1,COLOR_HL,COLOR_BG),
+    num_font.render(txt[3],1,COLOR_HL,COLOR_BG),
+    num_font.render(txt[4],1,COLOR_HL,COLOR_BG),
+    num_font.render(txt[5],1,COLOR_HL,COLOR_BG),
 ]
 
 #POSITION OF NUMBERS
+
+uper_left_corner=(5,16)
+lower_right_corner=(1902,230)
+rect_height=215
+rect_width=300
+
+#POSITIONS ABSOLUES
+
 number_pos=[
-    (320*0+320/2, 50 ),
-    (320*1+320/2, 50 ),
-    (320*2+320/2, 50 ),
-    (320*3+320/2, 50 ),
-    (320*4+320/2, 50),
-    (320*5+320/2, 50),
+    (160  , rect_height/2 +16),
+    (480  , rect_height/2 +16),
+    (800  , rect_height/2 +16),
+    (1120 , rect_height/2 +16),
+    (1440 , rect_height/2 +16),
+    (1760 , rect_height/2 +16),
 ]
 
+number_rect=[
+    pygame.Rect((number_pos[0][0]-rect_width/2,number_pos[0][1]-rect_height/2),(rect_width,rect_height)),
+    pygame.Rect((number_pos[1][0]-rect_width/2,number_pos[1][1]-rect_height/2),(rect_width,rect_height)),
+    pygame.Rect((number_pos[2][0]-rect_width/2,number_pos[2][1]-rect_height/2),(rect_width,rect_height)),
+    pygame.Rect((number_pos[3][0]-rect_width/2,number_pos[3][1]-rect_height/2),(rect_width,rect_height)),
+    pygame.Rect((number_pos[4][0]-rect_width/2,number_pos[4][1]-rect_height/2),(rect_width,rect_height)),
+    pygame.Rect((number_pos[5][0]-rect_width/2,number_pos[5][1]-rect_height/2),(rect_width,rect_height)),
+]
+
+#POSITIONS ALIGNEES
+
+real_pos=[
+    (160  -5 ,rect_height/2 +14),
+    (480  -5 ,rect_height/2 +14),
+    (800  -8,rect_height/2 +14),
+    (1120 -11,rect_height/2 +17),
+    (1440 -12 ,rect_height/2 +20),
+    (1760 -13 ,rect_height/2 +22),
+]
+
+number_rect_real=[
+    pygame.Rect((real_pos[0][0]-rect_width/2,real_pos[0][1]-rect_height/2),(rect_width,rect_height)),
+    pygame.Rect((real_pos[1][0]-rect_width/2,real_pos[1][1]-rect_height/2),(rect_width,rect_height)),
+    pygame.Rect((real_pos[2][0]-rect_width/2,real_pos[2][1]-rect_height/2),(rect_width,rect_height)),
+    pygame.Rect((real_pos[3][0]-rect_width/2,real_pos[3][1]-rect_height/2),(rect_width,rect_height)),
+    pygame.Rect((real_pos[4][0]-rect_width/2,real_pos[4][1]-rect_height/2),(rect_width,rect_height)),
+    pygame.Rect((real_pos[5][0]-rect_width/2,real_pos[5][1]-rect_height/2),(rect_width,rect_height)),
+]
+
+#ANIM CONSTANT
+Y_OF_PLUG=50
+Y_OF_NUM=-50
 
 #ENGINE
 
@@ -115,68 +179,76 @@ class Anim() : #Use this class as base for animations, see below with the Pop ex
 class Pop(Anim) : # The Pop anim will play the moove method each frame until the max frame is reached
     def moove(self,current_frame) :
         self.img.set_alpha(255-current_frame*16)
-        center_blit(SCREEN,self.img,(self.pos[0],self.pos[1]-current_frame*3))
+        center_blit(SCREEN,self.img,(self.pos[0],self.pos[1]-current_frame*5))
     def __init__(self,max_frame,img,pos) :
         Anim.__init__(self,max_frame)
         self.img=img
         self.pos=pos
         self.method=self.moove
     def anim(self) :
-        print(self.current_frame)
         Anim.anim(self)
 
 #SPECIFIC ENGINE
 
-class Number(Anim) :
+class Number(Anim) : # The Numbers (the values stored in txt) are shown as a specific Anim subclass stored in a specific list : NUMBER_ANIMATIONS
     def render(self,current_frame) :
+        global ANIMATIONS
+        if self.old_mode!=self.mode :
+            self.current_frame=0
+        self.old_mode=self.mode
+        print(f"{self.num} : {self.mode} - {self.current_frame}")
         match self.mode :
             case "IDLE" :
-                center_blit(SCREEN,self.rendered_idle,self.pos)
-                center_blit(SCREEN,plug_female_idle,(self.pos[0],self.pos[1]+60))
+                center_blit(SCREEN,rendered_idle[int(self.num)],(self.pos[0],self.pos[1]+Y_OF_NUM))
+                center_blit(SCREEN,plug_female_idle,(self.pos[0],self.pos[1]+Y_OF_PLUG))
             case "GOOD" :
-                center_blit(SCREEN,self.rendered_good,self.pos)
-                center_blit(SCREEN,plug_male_good,(self.pos[0]-35,self.pos[1]+60))
-                center_blit(SCREEN,plug_female_good,(self.pos[0]+35,self.pos[1]+60))
+                center_blit(SCREEN,rendered_good[int(self.num)],(self.pos[0],self.pos[1]+Y_OF_NUM))
+                center_blit(SCREEN,plug_male_good,(self.pos[0]-35,self.pos[1]+Y_OF_PLUG))
+                center_blit(SCREEN,plug_female_good,(self.pos[0]+35,self.pos[1]+Y_OF_PLUG))
+                if current_frame==0 :
+                    ANIMATIONS.append(Pop(20,elec,(self.pos[0]-10,self.pos[1]+60)))
             case "BAD" :
-                center_blit(SCREEN,self.rendered_bad,self.pos)
+                center_blit(SCREEN,rendered_bad[int(self.num)],(self.pos[0],self.pos[1]+Y_OF_NUM))
                 if current_frame<3 :
-                    center_blit(SCREEN,plug_male_bad,(self.pos[0]-100,self.pos[1]+60))
-                    center_blit(SCREEN,plug_female_bad,(self.pos[0]+100,self.pos[1]+60))
+                    center_blit(SCREEN,plug_male_bad,(self.pos[0]-100,self.pos[1]+Y_OF_PLUG))
+                    center_blit(SCREEN,plug_female_bad,(self.pos[0]+100,self.pos[1]+Y_OF_PLUG))
                 elif current_frame<10 :
-                    center_blit(SCREEN,plug_male_bad,(self.pos[0]-100+(current_frame-3)*9,self.pos[1]+60))
-                    center_blit(SCREEN,plug_female_bad,(self.pos[0]+100-(current_frame-3)*9,self.pos[1]+60))
+                    center_blit(SCREEN,plug_male_bad,(self.pos[0]-100+(current_frame-3)*9,self.pos[1]+Y_OF_PLUG))
+                    center_blit(SCREEN,plug_female_bad,(self.pos[0]+100-(current_frame-3)*9,self.pos[1]+Y_OF_PLUG))
             case "CHANGE" :
-                center_blit(SCREEN,self.rendered_idle,self.pos)
+                center_blit(SCREEN,rendered_good[int(self.num)],(self.pos[0],self.pos[1]+Y_OF_NUM))
+                center_blit(SCREEN,plug_male_good,(self.pos[0]-35,self.pos[1]+Y_OF_PLUG))
+                center_blit(SCREEN,plug_female_good,(self.pos[0]+35,self.pos[1]+Y_OF_PLUG))
+                pygame.draw.circle(SCREEN,GREEN,self.pos,self.current_frame*23)
             case _ :
                 center_blit(SCREEN,self.rendered_idle,self.pos)
-    def __init__(self,max_frame,num,txt,pos,loop) :
+    def __init__(self,max_frame,num,pos,loop) :
         Anim.__init__(self,max_frame,loop)
         #Engine
         self.num=num
         self.current_num="6"
         self.mode="IDLE"
+        self.old_mode="IDLE"
         self.status="no_con"
-        self.txt=txt
-        #style
-        self.font = pygame.font.Font(NUM_FONT_PATH,NUM_FONT_SIZE)
         #Render
         self.pos=pos
         self.method=self.render
         self.internal_frame=0
-        self.rendered_good=self.font.render(self.txt,1,GREEN,COLOR_BG)
-        self.rendered_bad=self.font.render(self.txt,1,RED,COLOR_BG)
-        self.rendered_idle=self.font.render(self.txt,1,COLOR_HL,COLOR_BG)
     def update(self,value) :
+        global VICTORY_PLAYING
         self.current_num=value
-        if self.current_num=="6" :
-            self.status="no_con"
-            self.mode="IDLE"
-        elif self.current_num==self.num :
-            self.status="good_con"
-            self.mode="GOOD"
+        if VICTORY_PLAYING :
+            self.mode="CHANGE"
         else :
-            self.status="bad_con"
-            self.mode="BAD"
+            if self.current_num=="6" :
+                self.status="no_con"
+                self.mode="IDLE"
+            elif self.current_num==self.num :
+                self.status="good_con"
+                self.mode="GOOD"
+            else :
+                self.status="bad_con"
+                self.mode="BAD"
     def anim(self) :
         Anim.anim(self)
 
@@ -188,13 +260,18 @@ ANIMATIONS=[]
 on=True
 CLOCK = pygame.time.Clock()
 GOOD=0
+VICTORY_TIMER=0
+VICTORY_ANIM_TIMER=0
+VICTORY_PLAYING=False
+
+debug_pos=[0,0]
 
 #Launching thread
 thread=arduino.Arduino()
 thread.start()
 
-for i,entry in enumerate(texts) :
-    NUMBER_ANIMATIONS.append(Number(10,str(i),texts[i],number_pos[i],loop=True))
+for i,entry in enumerate(txt) :
+    NUMBER_ANIMATIONS.append(Number(10,str(i),real_pos[i],loop=True))
 
 while on :
     #Cleaning of Screen
@@ -219,6 +296,33 @@ while on :
         entry.update(arduino_values[i])
         if entry.status=="good_con" :
             GOOD=GOOD+1
+    
+    #Victory handling
+    if GOOD==6 and VICTORY_PLAYING==False:
+        VICTORY_TIMER+=1
+        if VICTORY_TIMER>15 :
+            #TOOD launch animation
+            VICTORY_PLAYING=True
+            VICTORY_ANIM_TIMER=10  
+    else :
+        VICTORY_TIMER=0
+
+    if VICTORY_PLAYING :
+        if VICTORY_ANIM_TIMER==0 :
+            VICTORY_PLAYING=False
+            to_give=["0","1","2","3","4","5"]
+            for i,number in enumerate(NUMBER_ANIMATIONS) :
+                new_number=random.choice(to_give)
+                if i!=0 :
+                    while new_number==number.num :
+                        print(f"{i} - {to_give}")
+                        new_number=random.choice(to_give)
+                else :
+                    new_number=NUMBER_ANIMATIONS[5].num
+                number.num=new_number
+                to_give.remove(new_number)
+        else :
+            VICTORY_ANIM_TIMER=VICTORY_ANIM_TIMER-1
 
     #Numbers handling
     for i,animation in enumerate(NUMBER_ANIMATIONS) :
@@ -234,10 +338,39 @@ while on :
 
     #Show DEBUG
     if DEBUG :
+        #Show Cursor
+        keys = pygame.key.get_pressed()
+        to_ad=1
+        if keys[pygame.K_SPACE] :
+            to_ad=15
+        if keys[pygame.K_UP] :
+            debug_pos[1]=debug_pos[1]-to_ad
+        if keys[pygame.K_DOWN] :
+            debug_pos[1]=debug_pos[1]+to_ad
+        if keys[pygame.K_LEFT] :
+            debug_pos[0]=debug_pos[0]-to_ad
+        if keys[pygame.K_RIGHT] :
+            debug_pos[0]=debug_pos[0]+to_ad 
+        pos=f"{debug_pos[0]},{debug_pos[1]}"
+        to_blit=debug_font.render(pos,1,WHITE,COLOR_BG)
+        SCREEN.blit(to_blit,debug_pos)
+        SCREEN.set_at(debug_pos,WHITE)
+        #Show Rects
+        for pos in number_pos :
+            pygame.draw.line(SCREEN,WHITE,(pos[0],pos[1]-rect_height/2),(pos[0],pos[1]+rect_height/2))
+            pygame.draw.line(SCREEN,WHITE,(pos[0]-rect_width/2,pos[1]),(pos[0]+rect_width/2,pos[1]))
+        for entry in number_rect :
+            pygame.draw.rect(SCREEN,WHITE,entry,1)
+        for pos in real_pos :
+            pygame.draw.line(SCREEN,RED,(pos[0],pos[1]-rect_height/2),(pos[0],pos[1]+rect_height/2))
+            pygame.draw.line(SCREEN,RED,(pos[0]-rect_width/2,pos[1]),(pos[0]+rect_width/2,pos[1]))
+        for entry in number_rect_real :
+            pygame.draw.rect(SCREEN,RED,entry,1)
+        #Show FPS
         fps = str(round(CLOCK.get_fps(),1))
-        txt = f"DEBUG MODE | FPS : {fps} | GOOD : {GOOD}"
+        txt = f"DEBUG MODE | FPS : {fps} | GOOD : {GOOD} | ARDUINO : {arduino_values} | VICTORY_TIMER : {VICTORY_TIMER} | VICTORY_ANIM_TIMER : {VICTORY_ANIM_TIMER}"
         to_blit=debug_font.render(txt,1,WHITE,COLOR_BG)
-        SCREEN.blit(to_blit,(0,0))
+        SCREEN.blit(to_blit,(0,500))
 
     #End of loop
     pygame.display.update()
