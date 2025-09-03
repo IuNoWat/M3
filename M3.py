@@ -111,18 +111,21 @@ rendered_idle=[
 
 uper_left_corner=(5,16)
 lower_right_corner=(1902,230)
+
 rect_height=215
 rect_width=300
 
+y_offset = 840
+x_offset = 15
 #POSITIONS ABSOLUES
 
 number_pos=[
-    (160  , rect_height/2 +16),
-    (480  , rect_height/2 +16),
-    (800  , rect_height/2 +16),
-    (1120 , rect_height/2 +16),
-    (1440 , rect_height/2 +16),
-    (1760 , rect_height/2 +16),
+    (x_offset + 160  , y_offset + rect_height/2),
+    (x_offset + 480  , y_offset + rect_height/2),
+    (x_offset + 800  , y_offset + rect_height/2),
+    (x_offset + 1120 , y_offset + rect_height/2),
+    (x_offset + 1440 , y_offset + rect_height/2),
+    (x_offset + 1760 , y_offset + rect_height/2),
 ]
 
 number_rect=[
@@ -136,13 +139,14 @@ number_rect=[
 
 #POSITIONS ALIGNEES
 
+
 real_pos=[
-    (160  -5 ,rect_height/2 +14),
-    (480  -5 ,rect_height/2 +14),
-    (800  -8,rect_height/2 +14),
-    (1120 -11,rect_height/2 +17),
-    (1440 -12 ,rect_height/2 +20),
-    (1760 -13 ,rect_height/2 +22),
+    (x_offset + 160  -5 , y_offset + rect_height/2 +14),
+    (x_offset + 480  -5 , y_offset + rect_height/2 +15),
+    (x_offset + 800  -8,  y_offset + rect_height/2 +18),
+    (x_offset + 1120 -11, y_offset + rect_height/2 +20),
+    (x_offset + 1440 -13 ,y_offset + rect_height/2 +23),
+    (x_offset + 1760 -13 ,y_offset + rect_height/2 +24),
 ]
 
 number_rect_real=[
@@ -188,6 +192,20 @@ class Pop(Anim) : # The Pop anim will play the moove method each frame until the
     def anim(self) :
         Anim.anim(self)
 
+class Translate_ball(Anim) :
+    def moove(self,current_frame) :
+        pygame.draw.circle(SCREEN,self.color,(self.pos[0]-self.width/2+self.jump_by_frame*self.current_frame,self.pos[1]),self.size)
+    def __init__(self,max_frame,pos,width,size=15,color=GREEN) :
+        Anim.__init__(self,max_frame)
+        self.pos=pos
+        self.width=width
+        self.color=color
+        self.size=size
+        self.method=self.moove
+        self.jump_by_frame=width/max_frame
+    def anim(self) :
+        Anim.anim(self)    
+
 #SPECIFIC ENGINE
 
 class Number(Anim) : # The Numbers (the values stored in txt) are shown as a specific Anim subclass stored in a specific list : NUMBER_ANIMATIONS
@@ -205,8 +223,9 @@ class Number(Anim) : # The Numbers (the values stored in txt) are shown as a spe
                 center_blit(SCREEN,rendered_good[int(self.num)],(self.pos[0],self.pos[1]+Y_OF_NUM))
                 center_blit(SCREEN,plug_male_good,(self.pos[0]-35,self.pos[1]+Y_OF_PLUG))
                 center_blit(SCREEN,plug_female_good,(self.pos[0]+35,self.pos[1]+Y_OF_PLUG))
-                if current_frame==0 :
-                    ANIMATIONS.append(Pop(20,elec,(self.pos[0]-10,self.pos[1]+60)))
+                pygame.draw.line(SCREEN,GREEN,(self.pos[0]-rect_width/2,self.pos[1]+Y_OF_PLUG),(self.pos[0]+rect_width/2,self.pos[1]+Y_OF_PLUG),8)
+                if current_frame==0 and VICTORY_PLAYING==False :
+                    ANIMATIONS.append(Translate_ball(30,(self.pos[0],self.pos[1]+Y_OF_PLUG),rect_width))
             case "BAD" :
                 center_blit(SCREEN,rendered_bad[int(self.num)],(self.pos[0],self.pos[1]+Y_OF_NUM))
                 if current_frame<3 :
@@ -219,6 +238,7 @@ class Number(Anim) : # The Numbers (the values stored in txt) are shown as a spe
                 center_blit(SCREEN,rendered_good[int(self.num)],(self.pos[0],self.pos[1]+Y_OF_NUM))
                 center_blit(SCREEN,plug_male_good,(self.pos[0]-35,self.pos[1]+Y_OF_PLUG))
                 center_blit(SCREEN,plug_female_good,(self.pos[0]+35,self.pos[1]+Y_OF_PLUG))
+                pygame.draw.line(SCREEN,GREEN,(self.pos[0]-rect_width/2,self.pos[1]+Y_OF_PLUG),(self.pos[0]+rect_width/2,self.pos[1]+Y_OF_PLUG),8)
                 pygame.draw.circle(SCREEN,GREEN,self.pos,self.current_frame*23)
             case _ :
                 center_blit(SCREEN,self.rendered_idle,self.pos)
@@ -237,7 +257,7 @@ class Number(Anim) : # The Numbers (the values stored in txt) are shown as a spe
     def update(self,value) :
         global VICTORY_PLAYING
         self.current_num=value
-        if VICTORY_PLAYING :
+        if VICTORY_PLAYING and VICTORY_ANIM_TIMER<10 :
             self.mode="CHANGE"
         else :
             if self.current_num=="6" :
@@ -303,7 +323,9 @@ while on :
         if VICTORY_TIMER>15 :
             #TOOD launch animation
             VICTORY_PLAYING=True
-            VICTORY_ANIM_TIMER=10  
+            ANIMATIONS=[]
+            ANIMATIONS.append(Translate_ball(60,(1920/2,real_pos[2][1]+Y_OF_PLUG),1920,40))
+            VICTORY_ANIM_TIMER=70
     else :
         VICTORY_TIMER=0
 
@@ -370,7 +392,7 @@ while on :
         fps = str(round(CLOCK.get_fps(),1))
         txt = f"DEBUG MODE | FPS : {fps} | GOOD : {GOOD} | ARDUINO : {arduino_values} | VICTORY_TIMER : {VICTORY_TIMER} | VICTORY_ANIM_TIMER : {VICTORY_ANIM_TIMER}"
         to_blit=debug_font.render(txt,1,WHITE,COLOR_BG)
-        SCREEN.blit(to_blit,(0,500))
+        SCREEN.blit(to_blit,(0,0))
 
     #End of loop
     pygame.display.update()
