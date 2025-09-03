@@ -11,7 +11,7 @@ import arduino_serial as arduino
 
 #CONSTANTS
 FPS=30
-DIR=os.getcwd()+"/"
+DIR=os.path.dirname(os.path.abspath(__file__))
 SCREEN_SIZE=(1920, 1080)
 SCREEN = pygame.display.set_mode(SCREEN_SIZE,pygame.FULLSCREEN)
 FULLSCREEN=True
@@ -53,16 +53,16 @@ txt=[
 
 #ASSETS LOAD
 #FONTS
-NUM_FONT_PATH=DIR+"M3/assets/DS-DIGI.TTF"
-TXT_FONT_PATH=DIR+"M3/assets/Rubik-VariableFont_wght.ttf"
+NUM_FONT_PATH=DIR+"/assets/DS-DIGI.TTF"
+TXT_FONT_PATH=DIR+"/assets/Rubik-VariableFont_wght.ttf"
 #IMG
-plug_male_good=pygame.transform.scale_by(pygame.image.load(DIR+"M3/assets/plug_male_good.png").convert_alpha(),0.4)
-plug_male_bad=pygame.transform.scale_by(pygame.image.load(DIR+"M3/assets/plug_male_bad.png").convert_alpha(),0.4)
-plug_male_idle=pygame.transform.scale_by(pygame.image.load(DIR+"M3/assets/plug_male_idle.png").convert_alpha(),0.4)
-plug_female_good=pygame.transform.scale_by(pygame.image.load(DIR+"M3/assets/plug_female_good.png").convert_alpha(),0.4)
-plug_female_bad=pygame.transform.scale_by(pygame.image.load(DIR+"M3/assets/plug_female_bad.png").convert_alpha(),0.4)
-plug_female_idle=pygame.transform.scale_by(pygame.image.load(DIR+"M3/assets/plug_female_idle.png").convert_alpha(),0.4)
-elec=pygame.transform.scale_by(pygame.image.load(DIR+"M3/assets/elec.png").convert_alpha(),0.2)
+plug_male_good=pygame.transform.scale_by(pygame.image.load(DIR+"/assets/plug_male_good.png").convert_alpha(),0.4)
+plug_male_bad=pygame.transform.scale_by(pygame.image.load(DIR+"/assets/plug_male_bad.png").convert_alpha(),0.4)
+plug_male_idle=pygame.transform.scale_by(pygame.image.load(DIR+"/assets/plug_male_idle.png").convert_alpha(),0.4)
+plug_female_good=pygame.transform.scale_by(pygame.image.load(DIR+"/assets/plug_female_good.png").convert_alpha(),0.4)
+plug_female_bad=pygame.transform.scale_by(pygame.image.load(DIR+"/assets/plug_female_bad.png").convert_alpha(),0.4)
+plug_female_idle=pygame.transform.scale_by(pygame.image.load(DIR+"/assets/plug_female_idle.png").convert_alpha(),0.4)
+elec=pygame.transform.scale_by(pygame.image.load(DIR+"/assets/elec.png").convert_alpha(),0.2)
 
 #STYLE
 WHITE=pygame.Color("White")

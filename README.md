@@ -4,7 +4,23 @@ Manip M3 de l'expo MAISON du Vaisseau
 ## Configuration de la Raspberry Pi
 
 ### Installation de la Pi
-Rien de particulier à faire, télécharger la dernière version de Raspberry OS, puis copier le repository dans le bureau via git clone https://github.com/IuNoWat/M3.git
+
+#### Installation faite le 03/09 :
+- Installer une image fraiche de Raspberry OS
+- Télécharger le repo sur Desktop via git clone https://github.com/IuNoWat/M3.git
+- Créer le virtual_env M3_env via la commande python -m venv M3_env
+- Télécharger les dépendences via le fichier requirements.txt dans le repo : M3_env/bin/pip -r M3/requirements.txt
+- Créer le fichier autostart.sh sur Desktop et y entrer la commande /home/pi/Desktop/M3_env/bin/python /home/pi/Desktop/M3/M3.py
+- Aller dans /etc/xdg/autostart
+- Créer un fichier .desktop : sudo nano M3.desktop
+- Y entrer les lignes suivantes :
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Name=M3   
+Exec=bash /home/pi/Desktop/autostart.sh
+Type=Application
+Terminal=true
+
 
 ### Activer le lancement automatique via SystemD
 
