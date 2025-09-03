@@ -11,7 +11,7 @@ import arduino_serial as arduino
 
 #CONSTANTS
 FPS=30
-DIR="/home/vaisseau/Desktop/"
+DIR=os.getcwd()+"/"
 SCREEN_SIZE=(1920, 1080)
 SCREEN = pygame.display.set_mode(SCREEN_SIZE,pygame.FULLSCREEN)
 FULLSCREEN=True
@@ -214,7 +214,6 @@ class Number(Anim) : # The Numbers (the values stored in txt) are shown as a spe
         if self.old_mode!=self.mode :
             self.current_frame=0
         self.old_mode=self.mode
-        print(f"{self.num} : {self.mode} - {self.current_frame}")
         match self.mode :
             case "IDLE" :
                 center_blit(SCREEN,rendered_idle[int(self.num)],(self.pos[0],self.pos[1]+Y_OF_NUM))
