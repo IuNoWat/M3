@@ -194,8 +194,9 @@ class Pop(Anim) : # The Pop anim will play the moove method each frame until the
 
 class Translate_ball(Anim) :
     def moove(self,current_frame) :
-        pygame.draw.circle(SCREEN,self.color,(self.pos[0]-self.width/2+self.jump_by_frame*self.current_frame,self.pos[1]),self.size)
-    def __init__(self,max_frame,pos,width,size=15,color=GREEN) :
+        pos = (self.pos[0]-self.width/2+self.jump_by_frame*self.current_frame,self.pos[1])
+        pygame.draw.circle(SCREEN,self.color,pos,self.size)
+    def __init__(self,max_frame,pos,width,size=11,color=GREEN) :
         Anim.__init__(self,max_frame)
         self.pos=pos
         self.width=width
@@ -227,18 +228,18 @@ class Number(Anim) : # The Numbers (the values stored in txt) are shown as a spe
                     ANIMATIONS.append(Translate_ball(30,(self.pos[0],self.pos[1]+Y_OF_PLUG),rect_width))
             case "BAD" :
                 center_blit(SCREEN,rendered_bad[int(self.num)],(self.pos[0],self.pos[1]+Y_OF_NUM))
-                if current_frame<3 :
+                if current_frame<2 :
                     center_blit(SCREEN,plug_male_bad,(self.pos[0]-100,self.pos[1]+Y_OF_PLUG))
                     center_blit(SCREEN,plug_female_bad,(self.pos[0]+100,self.pos[1]+Y_OF_PLUG))
-                elif current_frame<10 :
-                    center_blit(SCREEN,plug_male_bad,(self.pos[0]-100+(current_frame-3)*9,self.pos[1]+Y_OF_PLUG))
-                    center_blit(SCREEN,plug_female_bad,(self.pos[0]+100-(current_frame-3)*9,self.pos[1]+Y_OF_PLUG))
+                else :
+                    center_blit(SCREEN,plug_male_bad,(self.pos[0]-100+(current_frame-3)*2,self.pos[1]+Y_OF_PLUG))
+                    center_blit(SCREEN,plug_female_bad,(self.pos[0]+100-(current_frame-3)*2,self.pos[1]+Y_OF_PLUG))
             case "CHANGE" :
                 center_blit(SCREEN,rendered_good[int(self.num)],(self.pos[0],self.pos[1]+Y_OF_NUM))
                 center_blit(SCREEN,plug_male_good,(self.pos[0]-35,self.pos[1]+Y_OF_PLUG))
                 center_blit(SCREEN,plug_female_good,(self.pos[0]+35,self.pos[1]+Y_OF_PLUG))
                 pygame.draw.line(SCREEN,GREEN,(self.pos[0]-rect_width/2,self.pos[1]+Y_OF_PLUG),(self.pos[0]+rect_width/2,self.pos[1]+Y_OF_PLUG),8)
-                pygame.draw.circle(SCREEN,GREEN,self.pos,self.current_frame*23)
+                pygame.draw.circle(SCREEN,GREEN,self.pos,self.current_frame*15)
             case _ :
                 center_blit(SCREEN,self.rendered_idle,self.pos)
     def __init__(self,max_frame,num,pos,loop) :
@@ -256,7 +257,7 @@ class Number(Anim) : # The Numbers (the values stored in txt) are shown as a spe
     def update(self,value) :
         global VICTORY_PLAYING
         self.current_num=value
-        if VICTORY_PLAYING and VICTORY_ANIM_TIMER<10 :
+        if VICTORY_PLAYING and VICTORY_ANIM_TIMER<15 :
             self.mode="CHANGE"
         else :
             if self.current_num=="6" :
@@ -290,7 +291,7 @@ thread=arduino.Arduino()
 thread.start()
 
 for i,entry in enumerate(txt) :
-    NUMBER_ANIMATIONS.append(Number(10,str(i),real_pos[i],loop=True))
+    NUMBER_ANIMATIONS.append(Number(30,str(i),real_pos[i],loop=True))
 
 while on :
     #Cleaning of Screen
@@ -323,8 +324,8 @@ while on :
             #TOOD launch animation
             VICTORY_PLAYING=True
             ANIMATIONS=[]
-            ANIMATIONS.append(Translate_ball(60,(1920/2,real_pos[2][1]+Y_OF_PLUG),1920,40))
-            VICTORY_ANIM_TIMER=70
+            ANIMATIONS.append(Translate_ball(90,(1920/2,real_pos[2][1]+Y_OF_PLUG),1920,40))
+            VICTORY_ANIM_TIMER=105
     else :
         VICTORY_TIMER=0
 
