@@ -89,7 +89,7 @@ elec=pygame.transform.scale_by(pygame.image.load(DIR+"/assets/elec.png").convert
 #SOUND
 pygame.mixer.init(48000, -16, 1, 4096)
 fb_long_neg = pygame.mixer.Sound(DIR+"/assets/SONS_MAISON_v1/fb_long_neg.wav")
-fb_long_pos = pygame.mixer.Sound(DIR+"/assets/SONS_MAISON_v1/fb_long_pos.wav")
+fb_long_pos = pygame.mixer.Sound(DIR+"/assets/SONS_MAISON_v1/fb_long_pos.mp3")
 fb_mid_neg = pygame.mixer.Sound(DIR+"/assets/SONS_MAISON_v1/fb_mid_neg.wav")
 fb_mid_pos = pygame.mixer.Sound(DIR+"/assets/SONS_MAISON_v1/fb_mid_pos.wav")
 fb_short_neg = pygame.mixer.Sound(DIR+"/assets/SONS_MAISON_v1/fb_short_neg.mp3")
@@ -251,7 +251,7 @@ class Number(Anim) : # The Numbers (the values stored in txt) are shown as a spe
                 self.ANIMATIONS=[]
             #SOUND
             if self.mode=="GOOD" :
-                fb_long_pos.play()
+                fb_mid_pos.play()
             if self.mode=="IDLE" :
                 fb_short_pos.play()
             if self.mode=="BAD" :
@@ -437,6 +437,8 @@ while on :
                 to_give.remove(new_number)
         else :
             VICTORY_ANIM_TIMER=VICTORY_ANIM_TIMER-1
+            if VICTORY_ANIM_TIMER%25==0 and VICTORY_ANIM_TIMER>20 :
+                fb_long_pos.play()
 
     #Numbers handling
     for i,animation in enumerate(NUMBER_ANIMATIONS) :
