@@ -6,6 +6,7 @@ import os
 import pygame
 pygame.init()
 
+
 from tools import *
 import arduino_serial as arduino
 
@@ -32,6 +33,28 @@ txt=[
     "301 kWh",
     "346 kWh"
 ]
+
+screen_txts = {
+    "IDLE" : "CONNECTE LES PRISES A LA CONSOMMATION ANNUELLE MOYENNE CORRESPONDANTE !",
+    "GOOD" : [
+        "GOOD_0 - Bien joué ! Effectivement, le Micro-Onde consomme en moyenne 39 kWh",
+        "GOOD_1 - Bien joué ! Effectivement, la Bouilloire consomme en moyenne 49 kWh",
+        "GOOD_2 - Bien joué ! Effectivement, la Plaque de Cuisson consomme en moyenne 131 kWh",
+        "GOOD_3 - Bien joué ! Effectivement, le Lave-Vaisselle consomme en moyenne 162 kWh",
+        "GOOD_4 - Bien joué ! Effectivement, le Seche-Linge consomme en moyenne 301 kWh",
+        "GOOD_5 - Bien joué ! Effectivement, le Réfrigérateur consomme en moyenne 346 kWh",
+        "GOOD_6 - Default"
+    ],
+    "BAD" : [
+        "BAD_0",
+        "BAD_1",
+        "BAD_2",
+        "BAD_3",
+        "BAD_4",
+        "BAD_5",
+        "BAD_6 - Default"
+    ]
+}
 
 #DATA
 
@@ -63,6 +86,14 @@ plug_female_good=pygame.transform.scale_by(pygame.image.load(DIR+"/assets/plug_f
 plug_female_bad=pygame.transform.scale_by(pygame.image.load(DIR+"/assets/plug_female_bad.png").convert_alpha(),0.4)
 plug_female_idle=pygame.transform.scale_by(pygame.image.load(DIR+"/assets/plug_female_idle.png").convert_alpha(),0.4)
 elec=pygame.transform.scale_by(pygame.image.load(DIR+"/assets/elec.png").convert_alpha(),0.2)
+#SOUND
+pygame.mixer.init(48000, -16, 1, 4096)
+fb_long_neg = pygame.mixer.Sound(DIR+"/assets/SONS_MAISON_v1/fb_long_neg.wav")
+fb_long_pos = pygame.mixer.Sound(DIR+"/assets/SONS_MAISON_v1/fb_long_pos.wav")
+fb_mid_neg = pygame.mixer.Sound(DIR+"/assets/SONS_MAISON_v1/fb_mid_neg.wav")
+fb_mid_pos = pygame.mixer.Sound(DIR+"/assets/SONS_MAISON_v1/fb_mid_pos.wav")
+fb_short_neg = pygame.mixer.Sound(DIR+"/assets/SONS_MAISON_v1/fb_short_neg.mp3")
+fb_short_pos = pygame.mixer.Sound(DIR+"/assets/SONS_MAISON_v1/fb_short_pos.mp3")
 
 #STYLE
 WHITE=pygame.Color("White")
@@ -212,8 +243,26 @@ class Translate_ball(Anim) :
 class Number(Anim) : # The Numbers (the values stored in txt) are shown as a specific Anim subclass stored in a specific list : NUMBER_ANIMATIONS
     def render(self,current_frame) :
         global ANIMATIONS
+        #Actions on a change in self.mode
         if self.old_mode!=self.mode :
             self.current_frame=0
+            #Delete animations if the change come from GOOD
+            if self.old_mode=="GOOD" :
+                self.ANIMATIONS=[]
+            #SOUND
+            if self.mode=="GOOD" :
+                fb_long_pos.play()
+            if self.mode=="IDLE" :
+                fb_short_pos.play()
+            if self.mode=="BAD" :
+                fb_short_neg.play()
+            #Screen handling
+            if self.mode=="GOOD" :
+                ANIMATIONS[0].set_mode("GOOD",self.current_num)
+            if self.mode=="BAD" :
+                ANIMATIONS[0].set_mode("BAD",self.current_num)
+            if self.mode=="IDLE" :
+                ANIMATIONS[0].set_mode("IDLE")
         self.old_mode=self.mode
         match self.mode :
             case "IDLE" :
@@ -225,7 +274,7 @@ class Number(Anim) : # The Numbers (the values stored in txt) are shown as a spe
                 center_blit(SCREEN,plug_female_good,(self.pos[0]+35,self.pos[1]+Y_OF_PLUG))
                 pygame.draw.line(SCREEN,GREEN,(self.pos[0]-rect_width/2,self.pos[1]+Y_OF_PLUG),(self.pos[0]+rect_width/2,self.pos[1]+Y_OF_PLUG),8)
                 if current_frame==0 and VICTORY_PLAYING==False :
-                    ANIMATIONS.append(Translate_ball(30,(self.pos[0],self.pos[1]+Y_OF_PLUG),rect_width))
+                    self.ANIMATIONS.append(Translate_ball(30,(self.pos[0],self.pos[1]+Y_OF_PLUG),rect_width))
             case "BAD" :
                 center_blit(SCREEN,rendered_bad[int(self.num)],(self.pos[0],self.pos[1]+Y_OF_NUM))
                 if current_frame<2 :
@@ -253,7 +302,7 @@ class Number(Anim) : # The Numbers (the values stored in txt) are shown as a spe
         #Render
         self.pos=pos
         self.method=self.render
-        self.internal_frame=0
+        self.ANIMATIONS=[]
     def update(self,value) :
         global VICTORY_PLAYING
         self.current_num=value
@@ -269,6 +318,46 @@ class Number(Anim) : # The Numbers (the values stored in txt) are shown as a spe
             else :
                 self.status="bad_con"
                 self.mode="BAD"
+    def anim(self) :
+        Anim.anim(self)
+
+class Screen(Anim) : # The Numbers (the values stored in txt) are shown as a specific Anim subclass stored in a specific list : NUMBER_ANIMATIONS
+    def render(self,current_frame) :
+        #Check any change in the mode, to start the animation from it's beginning if necessary
+        if self.old_mode!=self.mode :
+            print(f"CHANGEMENT DE MODE DE {self.old_mode} à {self.mode}")
+            self.current_frame=0
+        self.old_mode=self.mode
+        
+        if self.current_frame==self.max_frame-1 and self.mode!="IDLE" : #If Screen is not in IDLE, it go back to idle after a complete animation
+            self.mode="IDLE"
+            
+        #Select text to blit depending on self.mode and self.selected number
+        match self.mode :
+            case "IDLE" :
+                to_blit=debug_font.render(self.texts["IDLE"],1,WHITE,COLOR_BG)
+            case "GOOD" :
+                to_blit=debug_font.render(self.texts["GOOD"][self.selected_number],1,WHITE,COLOR_BG)
+            case "BAD" :
+                to_blit=debug_font.render(self.texts["BAD"][self.selected_number],1,WHITE,COLOR_BG)
+        center_blit(SCREEN,to_blit,self.pos)
+    def __init__(self,max_frame,texts,pos=(1920/2,1080/2),loop=True) :
+        Anim.__init__(self,max_frame,loop)
+        #Engine
+        self.texts=texts
+        self.mode="IDLE"
+        self.old_mode="IDLE"
+        self.selected_number=0
+        #Render
+        self.pos=pos
+        self.method=self.render
+        self.ANIMATIONS=[]
+    def set_mode(self,mode,selected_number=False) :
+        self.mode=mode
+        try :
+            self.selected_number=int(selected_number)
+        except :
+            self.selected_number=6
     def anim(self) :
         Anim.anim(self)
 
@@ -290,8 +379,12 @@ debug_pos=[0,0]
 thread=arduino.Arduino()
 thread.start()
 
+#Creating Numbers
 for i,entry in enumerate(txt) :
     NUMBER_ANIMATIONS.append(Number(30,str(i),real_pos[i],loop=True))
+
+#Creating SCREEN
+ANIMATIONS.append(Screen(FPS*15,screen_txts,))
 
 while on :
     #Cleaning of Screen
@@ -323,7 +416,6 @@ while on :
         if VICTORY_TIMER>15 :
             #TOOD launch animation
             VICTORY_PLAYING=True
-            ANIMATIONS=[]
             ANIMATIONS.append(Translate_ball(90,(1920/2,real_pos[2][1]+Y_OF_PLUG),1920,40))
             VICTORY_ANIM_TIMER=105
     else :
@@ -352,7 +444,14 @@ while on :
         if animation.finished :
             NUMBER_ANIMATIONS.pop(i)
     
-    #Animation handling
+    #Animation in numbers handling
+    for number in NUMBER_ANIMATIONS :
+        for i,animation in enumerate(number.ANIMATIONS) :
+            animation.anim()
+            if animation.finished :
+                number.ANIMATIONS.pop(i)
+    
+    #Animation
     for i,animation in enumerate(ANIMATIONS) :
         animation.anim()
         if animation.finished :
